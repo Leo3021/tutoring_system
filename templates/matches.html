@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Matches</title>
+</head>
+<body>
+    <h1>Student-Tutor Matches</h1>
+    <table border="1">
+        <tr>
+            <th>Student Name</th>
+            <th>Tutor Name</th>
+        </tr>
+        {% for match in matches %}
+        <tr>
+            <td>{{ match[0] }}</td>
+            <td>{{ match[1] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
