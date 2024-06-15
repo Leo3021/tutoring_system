@@ -4,15 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>家教服务系统</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='index_style.css') }}">
 </head>
 <body>
     <h1>家教服务系统</h1>
     <div id="mode-selection">
-        <h2>选择注册模式</h2>
-        <button onclick="window.location.href='/register_tutor_page'">注册家教</button>
-        <button onclick="window.location.href='/register_student_page'">注册学生</button>
-        <button onclick="window.location.href='/admin_view_tutors'">管理员模式</button> <!-- 添加管理员模式按钮 -->
+        <h2>选择登录模式</h2>
+        <div class="button-container">
+            <button onclick="window.location.href='/register_tutor_page'">家教模式</button>
+            <button onclick="window.location.href='/register_student_page'">学生模式</button>
+            <button onclick="window.location.href='/admin_view_tutors'">管理员模式</button>
+        </div>
     </div>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>

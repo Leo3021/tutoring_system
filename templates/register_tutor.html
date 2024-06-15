@@ -3,18 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>注册家教</title>
+    <title>家教登录(注册)</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>注册家教</h1>
-    <div id="register-tutor">
-        <input type="text" id="tutor-name" placeholder="姓名">
+    <h1>家教登录(注册)</h1>
+    <div id="login-tutor">
+        <input type="text" id="tutor-name" placeholder="请输入姓名" onblur="checkTutorName()">
+        <button onclick="loginTutor()">登录</button>
+    </div>
+    <div id="register-tutor" style="display: none;">
         <input type="text" id="tutor-subjects" placeholder="擅长科目（用逗号分隔）">
         <input type="text" id="tutor-grades" placeholder="教授年级（用逗号分隔）">
         <input type="text" id="tutor-rate" placeholder="收费（每小时）">
         <button onclick="registerTutor()">注册</button>
     </div>
+    <div id="existing-tutor-info"></div>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

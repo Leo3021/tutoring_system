@@ -69,6 +69,24 @@ def register_tutor_page():
 def register_student_page():
     return render_template('register_student.html')
 
+@app.route('/check_tutor', methods=['POST'])
+def check_tutor():
+    data = request.get_json()
+    name = data.get('name')
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM tutors WHERE name = %s", (name,))
+    tutor = cur.fetchone()
+    cur.close()
+    if tutor:
+        tutor_data = {
+            'id': tutor[0],
+            'name': tutor[1],
+            'subjects': tutor[2],
+            'grades': tutor[3],
+            'rate': tutor[4]
+        }
+        return jsonify({'exists': True, 'tutor': tutor_data})
+    return jsonify({'exists': False})
 
 # 家教注册，增加检查姓名是否已存在
 @app.route('/register_tutor', methods=['POST'])
@@ -90,6 +108,24 @@ def register_tutor():
         cur.close()
         return jsonify({'message': 'Tutor registered successfully'}), 201
 
+@app.route('/check_student', methods=['POST'])
+def check_student():
+    data = request.get_json()
+    name = data.get('name')
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM students WHERE name = %s", (name,))
+    student = cur.fetchone()
+    cur.close()
+    if student:
+        student_data = {
+            'id': student[0],
+            'name': student[1],
+            'grade': student[2],
+            'needs': student[3]
+        }
+        return jsonify({'exists': True, 'student': student_data})
+    return jsonify({'exists': False})
+
 # 学生注册，增加检查姓名是否已存在
 @app.route('/register_student', methods=['POST'])
 def register_student():
@@ -108,47 +144,80 @@ def register_student():
         mysql.connection.commit()
         cur.close()
         # 推荐家教逻辑
-        recommended_tutors = find_tutors_for_student(student_data['name'], student_data['grade'], student_data['needs'])
-        return jsonify({
-            'message': 'Student registered successfully',
-            'student': student_data,
-            'recommended_tutors': recommended_tutors
-        })
+        recommended_tutors = get_recommended_tutors(student_data['grade'], student_data['needs'])
+        return jsonify({'message': 'Student registered successfully', 'recommended_tutors': recommended_tutors})
 
-# 推荐家教的函数
-def find_tutors_for_student(student_id, grade, needs):
+@app.route('/get_recommended_tutors', methods=['GET'])
+def get_recommended_tutors_route():
+    needs = request.args.get('needs')
+    grade = request.args.get('grade')
+    recommended_tutors = get_recommended_tutors(needs, grade)
+    return jsonify({'recommended_tutors': recommended_tutors})
+
+@app.route('/deselect_tutor', methods=['POST'])
+def deselect_tutor():
+    student_id = request.json['student_id']
+    tutor_id = request.json['tutor_id']
     cur = mysql.connection.cursor()
+    cur.execute("DELETE FROM matches WHERE student_id = %s AND tutor_id = %s", (student_id, tutor_id))
+    mysql.connection.commit()
+    cur.close()
+    return jsonify({'message': '家教选择已取消'})
 
-    # 构建 SQL 查询
-    sql = """
-        SELECT id, name, subjects, grades, rate
-        FROM tutors
-        WHERE FIND_IN_SET(%s, grades) > 0 AND (
-    """
-
-    # 添加 subjects 匹配条件
-    sql += ' OR '.join(['FIND_IN_SET(%s, subjects) > 0' for _ in needs])
-    sql += ")"
-
-    # 参数列表，包含 grade 和 needs
-    params = [grade] + needs
-
-    # 执行查询
-    cur.execute(sql, params)
+def get_recommended_tutors(needs, grade):
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM tutors WHERE subjects LIKE %s AND grades LIKE %s", (f'%{needs}%', f'%{grade}%'))
     tutors = cur.fetchall()
     cur.close()
-
-    # 格式化返回的家教数据
-    return [
-        {
-            'id': tutor[0],
-            'name': tutor[1],
-            'subjects': tutor[2].split(','),
-            'grades': tutor[3].split(','),
-            'rate': tutor[4]
-        }
-        for tutor in tutors
+    recommended_tutors = [
+        {'id': tutor[0], 'name': tutor[1], 'subjects': tutor[2], 'grades': tutor[3], 'rate': tutor[4]} for tutor in tutors
     ]
+    return recommended_tutors
+
+
+# def get_recommended_tutors(needs, grade):
+#     cur = mysql.connection.cursor()
+#     cur.execute("SELECT * FROM tutors WHERE subjects LIKE %s AND grades LIKE %s", (f'%{needs}%', f'%{grade}%'))
+#     tutors = cur.fetchall()
+#     cur.close()
+#     recommended_tutors = [
+#         {'id': tutor[0], 'name': tutor[1], 'subjects': tutor[2], 'grades': tutor[3], 'rate': tutor[4]} for tutor in tutors
+#     ]
+#     return recommended_tutors
+# # 推荐家教的函数
+# def find_tutors_for_student(student_id, grade, needs):
+#     cur = mysql.connection.cursor()
+#
+#     # 构建 SQL 查询
+#     sql = """
+#         SELECT id, name, subjects, grades, rate
+#         FROM tutors
+#         WHERE FIND_IN_SET(%s, grades) > 0 AND (
+#     """
+#
+#     # 添加 subjects 匹配条件
+#     sql += ' OR '.join(['FIND_IN_SET(%s, subjects) > 0' for _ in needs])
+#     sql += ")"
+#
+#     # 参数列表，包含 grade 和 needs
+#     params = [grade] + needs
+#
+#     # 执行查询
+#     cur.execute(sql, params)
+#     tutors = cur.fetchall()
+#     cur.close()
+#
+#     # 格式化返回的家教数据
+#     return [
+#         {
+#             'id': tutor[0],
+#             'name': tutor[1],
+#             'subjects': tutor[2].split(','),
+#             'grades': tutor[3].split(','),
+#             'rate': tutor[4]
+#         }
+#         for tutor in tutors
+#     ]
 
 
 # 学生选择家教

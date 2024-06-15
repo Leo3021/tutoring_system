@@ -3,17 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>注册学生</title>
+    <title>学生登录/注册</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>注册学生</h1>
-    <div id="register-student">
-        <input type="text" id="student-name" placeholder="姓名">
+    <h1>学生登录/注册</h1>
+    <div id="login-student">
+        <input type="text" id="student-name" placeholder="请输入姓名" onblur="checkStudentName()">
+        <button onclick="loginStudent()">登录</button>
+    </div>
+    <div id="register-student" style="display: none;">
         <input type="text" id="student-needs" placeholder="需求科目（用逗号分隔）">
         <input type="text" id="student-grade" placeholder="年级">
         <button onclick="registerStudent()">注册</button>
     </div>
+    <div id="existing-student-info"></div>
     <div id="results"></div> <!-- 用于显示推荐的家教和选择按钮 -->
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
